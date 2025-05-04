@@ -25,6 +25,7 @@ bld/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
+[Mm]igrations
 
 # Visual Studio 2015 cache/options directory
 .vs/
@@ -545,5 +546,9 @@ obj/
 # Ignore all local history of files
 .history
 .ionide
+
+.env
+
+*.session.sql
 
 # End of https://www.toptal.com/developers/gitignore/api/dotnetcore,aspnetcore,csharp,visualstudiocode
