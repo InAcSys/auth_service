@@ -1,9 +1,10 @@
+using AuthService.Domain.Entities.Abstracts;
 using AuthService.Infrastructure.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthService.Infrastructure.Repositories.Abstracts
 {
-    public abstract class Repository<T, TKey>(DbContext context) : IRepository<T, TKey> where T : class
+    public abstract class Repository<T, TKey>(DbContext context) : IRepository<T, TKey> where T : Entity<TKey>
     {
         protected readonly DbContext _context = context;
         public async virtual Task<T?> Create(T entity)
@@ -15,15 +16,15 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
 
         public async virtual Task<bool> Delete(TKey id)
         {
-            await _context.Set<T>().FindAsync(id);
             var entity = await _context.Set<T>().FindAsync(id);
             if (entity is null)
             {
                 return false;
             }
-            _context.Set<T>().Remove(entity);
-            await _context.SaveChangesAsync();
-            return true;
+            entity.IsActive = false;
+            entity.Deleted = DateTime.UtcNow;
+            var result = await Update(id, entity);
+            return result is not null;
         }
 
         public async virtual Task<IEnumerable<T>> GetAll(int pageNumber, int pageSize)
@@ -41,6 +42,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             var take = pageSize;
 
             var entities = await _context.Set<T>()
+                .Where(x => x.IsActive)
                 .Skip(skip)
                 .Take(take)
                 .ToListAsync();
@@ -48,15 +50,23 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             return entities;
         }
 
-        public async virtual Task<T?> GetById(TKey id)
+        public virtual async Task<T?> GetById(TKey id)
         {
             if (EqualityComparer<TKey>.Default.Equals(id, default))
             {
-                throw new ArgumentNullException(nameof(id));
+                throw new ArgumentException("The ID cannot be the default value.", nameof(id));
             }
+
             var entity = await _context.Set<T>().FindAsync(id);
+
+            if (entity is null)
+            {
+                return null;
+            }
+
             return entity;
         }
+
 
         public async virtual Task<T> Update(TKey id, T entity)
         {
@@ -76,6 +86,8 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             {
                 keyProperty.SetValue(entity, keyProperty.GetValue(existingEntity));
             }
+
+            existingEntity.Updated = DateTime.UtcNow;
 
             _context.Entry(existingEntity).CurrentValues.SetValues(entity);
             await _context.SaveChangesAsync();

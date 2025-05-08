@@ -56,6 +56,20 @@ namespace AuthService.Presentation.Controllers
             }
         }
 
+        [HttpDelete("revoke-permissions/role/{id}")]
+        public async Task<IActionResult> RevokePermissionsToRole(int id, PermissionsDTO permissions)
+        {
+            try
+            {
+                var result = await _service.RevokePermissions(id, permissions);
+                return Ok(result);
+            }
+            catch (InvalidOperationException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+        }
+
         [HttpPost("verify-authorization")]
         public async Task<IActionResult> VerifyAuth(HasPermissionDTO verify)
         {

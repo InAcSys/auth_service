@@ -27,8 +27,9 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
                 var permissionExist = await _permissionRepository.GetById(permission) is not null;
                 if (permissionExist)
                 {
-                    var rolePermissionExist = await Exists(id, permission);
-                    if (!rolePermissionExist)
+                    var rolePermissionId = await Exists(id, permission);
+                    Console.WriteLine(rolePermissionId);
+                    if (rolePermissionId == 0)
                     {
                         var total = await _context.Set<RolePermission>().ToListAsync();
                         var rolePermission = new RolePermission
@@ -39,6 +40,15 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
                         };
                         await Create(rolePermission);
                     }
+                    else
+                    {
+                        var entity = await GetById(rolePermissionId);
+                        if (entity is not null)
+                        {
+                            entity.IsActive = true;
+                            await Update(rolePermissionId, entity);
+                        }
+                    }
                 }
             }
 
@@ -46,17 +56,20 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             return result;
         }
 
-        public async Task<bool> Exists(int roleId, int permissionId)
+        public async Task<int> Exists(int roleId, int permissionId)
         {
             var role = await _roleRepository.GetById(roleId) is not null;
             var permission = await _permissionRepository.GetById(permissionId) is not null;
             if (role && permission)
             {
-                return await _context
+                int id = await _context
                     .Set<RolePermission>()
-                    .AnyAsync(rp => rp.RoleId == roleId && rp.PermissionId == permissionId);
+                    .Where(rp => rp.RoleId == roleId && rp.PermissionId == permissionId)
+                    .Select(rp => rp.Id)
+                    .FirstOrDefaultAsync();
+                return id;
             }
-            return false;
+            return 0;
         }
 
         public async Task<RolePermissionsDTO> GetPermissionsByRoleId(int roleId)
@@ -69,7 +82,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
 
             var permissionsId = await _context
                 .Set<RolePermission>()
-                .Where(rp => rp.RoleId == roleId)
+                .Where(rp => rp.RoleId == roleId && rp.IsActive)
                 .Select(rp => rp.PermissionId)
                 .ToListAsync();
 
@@ -104,9 +117,40 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             return result;
         }
 
-        public Task<bool> HasPermission(HasPermissionDTO hasPermission)
+        public async Task<bool> RevokePermissions(int id, PermissionsDTO permissions)
         {
-            return Exists(hasPermission.RoleId, hasPermission.PermissionId);
+            var role = await _roleRepository.GetById(id);
+            if (role is null)
+            {
+                throw new InvalidOperationException($"Role with id {id} not found");
+            }
+
+            foreach (var permissionId in permissions.permissionsId)
+            {
+                int entityId = await _context
+                    .Set<RolePermission>()
+                    .Where(rp => rp.RoleId == id && rp.PermissionId == permissionId)
+                    .Select(rp => rp.Id)
+                    .FirstOrDefaultAsync();
+
+                if (entityId != 0)
+                {
+                    var rolePermission = await GetById(entityId);
+                    if (rolePermission is not null)
+                    {
+                        rolePermission.IsActive = false;
+                        rolePermission.Deleted = DateTime.UtcNow;
+                        await Update(entityId, rolePermission);
+                    }
+                }
+            }
+            return true;
+        }
+
+        public async Task<bool> HasPermission(HasPermissionDTO hasPermission)
+        {
+            int id = await Exists(hasPermission.RoleId, hasPermission.PermissionId);
+            return id != 0;
         }
     }
 }

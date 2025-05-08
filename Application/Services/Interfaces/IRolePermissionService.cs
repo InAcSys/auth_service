@@ -8,5 +8,6 @@ namespace AuthService.Application.Services.Interfaces
         Task<RolePermissionsDTO> GetPermissionsByRoleId(int roleId);
         Task<RolePermissionsDTO> Assign(int id, CreateRolePermissionDTO permissions);
         Task<bool> HasPermission(HasPermissionDTO hasPermission);
+        Task<bool> RevokePermissions(int id, PermissionsDTO permissions);
     }
 }
