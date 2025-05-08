@@ -8,6 +8,7 @@ namespace AuthService.Infrastructure.Repositories.Interfaces
         Task<RolePermissionsDTO> GetPermissionsByRoleId(int roleId);
         Task<RolePermissionsDTO> Assign(int id, CreateRolePermissionDTO permissions);
         Task<bool> HasPermission(HasPermissionDTO hasPermission);
-        Task<bool> Exists(int roleId, int permissionId);
+        Task<int> Exists(int roleId, int permissionId);
+        Task<bool> RevokePermissions(int id, PermissionsDTO permissions);
     }
 }

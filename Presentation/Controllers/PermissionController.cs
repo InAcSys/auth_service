@@ -39,7 +39,8 @@ namespace AuthService.Presentation.Controllers
                 var newPermission = new Permission
                 {
                     Name = permission.Name,
-                    
+                    Description = permission.Description,
+                    Path = permission.Path
                 };
                 var createdPermission = await _service.Create(newPermission);
                 if (createdPermission is null)

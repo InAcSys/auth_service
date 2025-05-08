@@ -30,5 +30,11 @@ namespace AuthService.Application.Services.Abstracts
             var result = await _rolePermissionRepository.HasPermission(hasPermission);
             return result;
         }
+
+        public async Task<bool> RevokePermissions(int id, PermissionsDTO permissions)
+        {
+            var result = await _rolePermissionRepository.RevokePermissions(id, permissions);
+            return result;
+        }
     }
 }
