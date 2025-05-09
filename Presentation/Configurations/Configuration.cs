@@ -1,3 +1,4 @@
+using AuthService.Application.Decoders.JWT;
 using AuthService.Application.Services.Concretes;
 using AuthService.Application.Services.Interfaces;
 using AuthService.Application.Validators;
@@ -43,6 +44,7 @@ namespace AuthService.Presentation.Configurations
             services.AddScoped<IRepository<Permission, int>, PermissionRepository>();
             services.AddScoped<IRepository<RolePermission, int>, RolePermissionRepository>();
             services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+            services.AddScoped<IJWTDecoder, JWTDecoder>();
 
             services.AddValidatorsFromAssemblyContaining<RoleValidator>();
             services.AddValidatorsFromAssemblyContaining<PermissionValidator>();

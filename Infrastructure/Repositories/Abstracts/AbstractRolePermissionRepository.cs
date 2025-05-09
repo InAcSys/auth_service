@@ -147,7 +147,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             return true;
         }
 
-        public async Task<bool> HasPermission(HasPermissionDTO hasPermission)
+        public async Task<bool> HasPermission(VerifyPermissionDTO hasPermission)
         {
             int id = await Exists(hasPermission.RoleId, hasPermission.PermissionId);
             return id != 0;
