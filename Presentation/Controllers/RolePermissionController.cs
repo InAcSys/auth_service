@@ -1,6 +1,5 @@
 using AuthService.Application.Services.Interfaces;
 using AuthService.Domain.DTOs.RolePermission;
-using AuthService.Domain.Entities.Concretes;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthService.Presentation.Controllers
