@@ -16,15 +16,15 @@ namespace AuthService.Application.Services.Abstracts
     {
         private readonly IRolePermissionRepository _rolePermissionRepository = rolePermissionRepository;
         private readonly IJWTDecoder _decoder = decoder;
-        public async Task<RolePermissionsDTO> GetPermissionsByRoleId(int roleId)
+        public async Task<RolePermissionsDTO> GetPermissionsByRoleId(int roleId, Guid tenantId)
         {
-            var result = await _rolePermissionRepository.GetPermissionsByRoleId(roleId);
+            var result = await _rolePermissionRepository.GetPermissionsByRoleId(roleId, tenantId);
             return result;
         }
 
-        public async Task<RolePermissionsDTO> Assign(int id, CreateRolePermissionDTO permissions)
+        public async Task<RolePermissionsDTO> Assign(int id, CreateRolePermissionDTO permissions, Guid tenantId)
         {
-            var result = await _rolePermissionRepository.Assign(id, permissions);
+            var result = await _rolePermissionRepository.Assign(id, permissions, tenantId);
             return result;
         }
 
@@ -40,9 +40,9 @@ namespace AuthService.Application.Services.Abstracts
             return result;
         }
 
-        public async Task<bool> RevokePermissions(int id, PermissionsDTO permissions)
+        public async Task<bool> RevokePermissions(int id, PermissionsDTO permissions, Guid tenantId)
         {
-            var result = await _rolePermissionRepository.RevokePermissions(id, permissions);
+            var result = await _rolePermissionRepository.RevokePermissions(id, permissions, tenantId);
             return result;
         }
     }

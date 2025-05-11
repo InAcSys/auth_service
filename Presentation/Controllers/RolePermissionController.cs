@@ -1,3 +1,4 @@
+using AuthService.Application.Decoders.JWT;
 using AuthService.Application.Services.Interfaces;
 using AuthService.Domain.DTOs.RolePermission;
 using Microsoft.AspNetCore.Mvc;
@@ -6,9 +7,11 @@ namespace AuthService.Presentation.Controllers
 {
     [ApiController, Route("api/[controller]")]
     public class RolePermissionController(
-        IRolePermissionService service
+        IRolePermissionService service,
+        IJWTDecoder decoder
     ) : ControllerBase
     {
+        private readonly IJWTDecoder _decoder = decoder;
 
         private readonly IRolePermissionService _service = service;
 
@@ -30,10 +33,16 @@ namespace AuthService.Presentation.Controllers
             return Ok(rolePermissions);
         }
 
-        [HttpGet("role/{id}/permissions")]
-        public async Task<IActionResult> GetPermissionsByRoleId(int id)
+        [HttpGet("role/permissions/{id}")]
+        public async Task<IActionResult> GetPermissionsByRoleId()
         {
-            var result = await _service.GetPermissionsByRoleId(id);
+            string? jwt = Request.Headers["Authorization"];
+            if (string.IsNullOrEmpty(jwt))
+            {
+                return BadRequest();
+            }
+            var jwtBody = _decoder.Decoder(jwt);
+            var result = await _service.GetPermissionsByRoleId(jwtBody.RoleId, jwtBody.TenantId);
             if (result is null)
             {
                 return NotFound("Role not found");
@@ -41,12 +50,20 @@ namespace AuthService.Presentation.Controllers
             return Ok(result);
         }
 
-        [HttpPost("assign-permissions/role/{id}")]
-        public async Task<IActionResult> Assign(int id, CreateRolePermissionDTO permissions)
+        [HttpPost("assign-permissions")]
+        public async Task<IActionResult> Assign([FromQuery] int? id, [FromQuery] Guid? tenantId, [FromBody] CreateRolePermissionDTO permissions)
         {
             try
             {
-                var result = await _service.Assign(id, permissions);
+                string? jwt = Request.Headers["Authorization"];
+                if (string.IsNullOrEmpty(jwt))
+                {
+                    return BadRequest();
+                }
+                var jwtBody = _decoder.Decoder(jwt);
+                int roleId = id is null ? jwtBody.RoleId : (int)id;
+                Guid tenantIdentity = tenantId is null ? jwtBody.TenantId : (Guid)tenantId;
+                var result = await _service.Assign(roleId, permissions, tenantIdentity);
                 return Ok(result);
             }
             catch (InvalidOperationException exception)
@@ -56,11 +73,18 @@ namespace AuthService.Presentation.Controllers
         }
 
         [HttpDelete("revoke-permissions/role/{id}")]
-        public async Task<IActionResult> RevokePermissionsToRole(int id, PermissionsDTO permissions)
+        public async Task<IActionResult> RevokePermissionsToRole(int? id, PermissionsDTO permissions)
         {
             try
             {
-                var result = await _service.RevokePermissions(id, permissions);
+                string? jwt = Request.Headers["Authorization"];
+                if (string.IsNullOrEmpty(jwt))
+                {
+                    return BadRequest();
+                }
+                var jwtBody = _decoder.Decoder(jwt);
+                int roleId = id is null ? jwtBody.RoleId : (int)id;
+                var result = await _service.RevokePermissions(roleId, permissions, jwtBody.TenantId);
                 return Ok(result);
             }
             catch (InvalidOperationException exception)

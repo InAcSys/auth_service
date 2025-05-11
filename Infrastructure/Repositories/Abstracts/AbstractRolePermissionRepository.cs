@@ -14,7 +14,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
         protected IRepository<Role, int> _roleRepository = roleRepository;
         protected IRepository<Permission, int> _permissionRepository = permissionRepository;
 
-        public async Task<RolePermissionsDTO> Assign(int id, CreateRolePermissionDTO permissions)
+        public async Task<RolePermissionsDTO> Assign(int id, CreateRolePermissionDTO permissions, Guid tenantId)
         {
             var roleExist = await _roleRepository.GetById(id) is null;
             if (roleExist)
@@ -27,8 +27,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
                 var permissionExist = await _permissionRepository.GetById(permission) is not null;
                 if (permissionExist)
                 {
-                    var rolePermissionId = await Exists(id, permission);
-                    Console.WriteLine(rolePermissionId);
+                    var rolePermissionId = await Exists(id, permission, tenantId);
                     if (rolePermissionId == 0)
                     {
                         var total = await _context.Set<RolePermission>().ToListAsync();
@@ -36,7 +35,8 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
                         {
                             Id = total.Count + 1,
                             RoleId = id,
-                            PermissionId = permission
+                            PermissionId = permission,
+                            TenantId = tenantId
                         };
                         await Create(rolePermission);
                     }
@@ -52,11 +52,11 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
                 }
             }
 
-            var result = await GetPermissionsByRoleId(id);
+            var result = await GetPermissionsByRoleId(id, tenantId);
             return result;
         }
 
-        public async Task<int> Exists(int roleId, int permissionId)
+        public async Task<int> Exists(int roleId, int permissionId, Guid tenantId)
         {
             var role = await _roleRepository.GetById(roleId) is not null;
             var permission = await _permissionRepository.GetById(permissionId) is not null;
@@ -72,7 +72,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             return 0;
         }
 
-        public async Task<RolePermissionsDTO> GetPermissionsByRoleId(int roleId)
+        public async Task<RolePermissionsDTO> GetPermissionsByRoleId(int roleId, Guid tenantId)
         {
             var role = await _roleRepository.GetById(roleId);
             if (role is null)
@@ -82,7 +82,10 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
 
             var permissionsId = await _context
                 .Set<RolePermission>()
-                .Where(rp => rp.RoleId == roleId && rp.IsActive)
+                .Where(
+                    rp =>
+                        rp.RoleId == roleId && rp.IsActive && rp.TenantId == tenantId
+                )
                 .Select(rp => rp.PermissionId)
                 .ToListAsync();
 
@@ -117,7 +120,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             return result;
         }
 
-        public async Task<bool> RevokePermissions(int id, PermissionsDTO permissions)
+        public async Task<bool> RevokePermissions(int id, PermissionsDTO permissions, Guid tenantId)
         {
             var role = await _roleRepository.GetById(id);
             if (role is null)
@@ -149,7 +152,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
 
         public async Task<bool> HasPermission(VerifyPermissionDTO hasPermission)
         {
-            int id = await Exists(hasPermission.RoleId, hasPermission.PermissionId);
+            int id = await Exists(hasPermission.RoleId, hasPermission.PermissionId, hasPermission.TenantId);
             return id != 0;
         }
     }
