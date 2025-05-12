@@ -5,6 +5,6 @@ namespace AuthService.Infrastructure.Repositories.Interfaces
 {
     public interface IPermissionRepository : IRepository<Permission, int>
     {
-        Task<IEnumerable<PermissionDTO>> GetPermissionsByCategoryId(int categoryId);
+        Task<IEnumerable<PermissionDTO>> GetPermissionsByCategoryId(int categoryId, Guid tenantId);
     }
 }

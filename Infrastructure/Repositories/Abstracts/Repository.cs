@@ -14,20 +14,20 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             return entity;
         }
 
-        public async virtual Task<bool> Delete(TKey id)
+        public async virtual Task<bool> Delete(TKey id, Guid tenantId)
         {
-            var entity = await _context.Set<T>().FindAsync(id);
+            var entity = await _context.Set<T>().FindAsync(id, tenantId);
             if (entity is null)
             {
                 return false;
             }
             entity.IsActive = false;
             entity.Deleted = DateTime.UtcNow;
-            var result = await Update(id, entity);
+            var result = await Update(id, entity, tenantId);
             return result is not null;
         }
 
-        public async virtual Task<IEnumerable<T>> GetAll(int pageNumber, int pageSize)
+        public async virtual Task<IEnumerable<T>> GetAll(int pageNumber, int pageSize, Guid? tenantId)
         {
             if (pageNumber < 1)
             {
@@ -42,7 +42,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             var take = pageSize;
 
             var entities = await _context.Set<T>()
-                .Where(x => x.IsActive)
+                .Where(x => x.IsActive && (x.TenantId == tenantId || x.TenantId == Guid.Empty))
                 .Skip(skip)
                 .Take(take)
                 .ToListAsync();
@@ -50,14 +50,18 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             return entities;
         }
 
-        public virtual async Task<T?> GetById(TKey id)
+        public virtual async Task<T?> GetById(TKey id, Guid tenantId)
         {
             if (EqualityComparer<TKey>.Default.Equals(id, default))
             {
                 throw new ArgumentException("The ID cannot be the default value.", nameof(id));
             }
 
-            var entity = await _context.Set<T>().FindAsync(id);
+            var entity = await _context
+                .Set<T>()
+                .FirstOrDefaultAsync(r =>
+                    Equals(r.Id, id) &&
+                    (Equals(r.TenantId, tenantId) || Equals(r.TenantId, Guid.Empty)));
 
             if (entity is null)
             {
@@ -68,14 +72,14 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
         }
 
 
-        public async virtual Task<T> Update(TKey id, T entity)
+        public async virtual Task<T> Update(TKey id, T entity, Guid tenantId)
         {
             if (EqualityComparer<TKey>.Default.Equals(id, default))
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
-            var existingEntity = await _context.Set<T>().FindAsync(id);
+            var existingEntity = await GetById(id, tenantId);
             if (existingEntity is null)
             {
                 throw new InvalidOperationException("The entity to update was not found.");

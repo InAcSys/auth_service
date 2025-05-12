@@ -1,5 +1,4 @@
 using AuthService.Application.Services.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthService.Presentation.Controllers
@@ -12,7 +11,7 @@ namespace AuthService.Presentation.Controllers
         private readonly ITenantService _service = service;
 
         [HttpPost("initialize/tenant/{id}")]
-        public async Task<IActionResult> InitializeTenant(Guid id)
+        public async Task<IActionResult> InitializeTenant([FromRoute] Guid id)
         {
             var result = await _service.Initialize(id);
             return result ? Ok() : BadRequest();

@@ -14,16 +14,16 @@ namespace AuthService.Presentation.Controllers
         private readonly IService<Role, int> _service = service;
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] Guid tenantId = default)
         {
-            var roles = await _service.GetAll(pageNumber, pageSize);
+            var roles = await _service.GetAll(pageNumber, pageSize, tenantId);
             return Ok(roles);
         }
 
-        [HttpGet("id/{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("id")]
+        public async Task<IActionResult> GetById([FromQuery] Guid tenantId, [FromQuery] int roleId)
         {
-            var role = await _service.GetById(id);
+            var role = await _service.GetById(roleId, tenantId);
             if (role is null)
             {
                 return NotFound();
@@ -32,7 +32,7 @@ namespace AuthService.Presentation.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreateRoleDTO role)
+        public async Task<IActionResult> Create([FromBody] CreateRoleDTO role, [FromQuery] Guid tenantId)
         {
             try
             {
@@ -40,7 +40,7 @@ namespace AuthService.Presentation.Controllers
                 {
                     Name = role.Name
                 };
-                var createdRole = await _service.Create(newRole);
+                var createdRole = await _service.Create(newRole, tenantId);
                 if (createdRole is null)
                 {
                     return BadRequest("Role can not be create");
@@ -53,8 +53,8 @@ namespace AuthService.Presentation.Controllers
             }
         }
 
-        [HttpPut("id/{id}")]
-        public async Task<IActionResult> Update(int id, UpdateRoleDTO role)
+        [HttpPut]
+        public async Task<IActionResult> Update([FromQuery] int id, [FromBody] UpdateRoleDTO role, [FromQuery] Guid tenantId)
         {
             try
             {
@@ -63,7 +63,7 @@ namespace AuthService.Presentation.Controllers
                     Name = role.Name,
                     Updated = DateTime.UtcNow
                 };
-                var updateRole = await _service.Update(id, updatedRole);
+                var updateRole = await _service.Update(id, updatedRole, tenantId);
                 if (updateRole is null)
                 {
                     return BadRequest("Role can not be udpate");
@@ -80,12 +80,12 @@ namespace AuthService.Presentation.Controllers
             }
         }
 
-        [HttpDelete("id/{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [HttpDelete]
+        public async Task<IActionResult> Delete([FromQuery] int id, [FromQuery] Guid tenantId)
         {
             try
             {
-                var result = await _service.Delete(id);
+                var result = await _service.Delete(id, tenantId);
                 if (!result)
                 {
                     return BadRequest("Role can not be delete");

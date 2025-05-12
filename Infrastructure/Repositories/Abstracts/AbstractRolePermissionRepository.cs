@@ -16,7 +16,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
 
         public async Task<RolePermissionsDTO> Assign(int id, CreateRolePermissionDTO permissions, Guid tenantId)
         {
-            var roleExist = await _roleRepository.GetById(id) is null;
+            var roleExist = await _roleRepository.GetById(id, tenantId) is null;
             if (roleExist)
             {
                 throw new InvalidOperationException($"Role with id {id} not found");
@@ -24,16 +24,14 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
 
             foreach (var permission in permissions.Permissions)
             {
-                var permissionExist = await _permissionRepository.GetById(permission) is not null;
+                var permissionExist = await _permissionRepository.GetById(permission, Guid.Empty) is not null;
                 if (permissionExist)
                 {
                     var rolePermissionId = await Exists(id, permission, tenantId);
                     if (rolePermissionId == 0)
                     {
-                        var total = await _context.Set<RolePermission>().ToListAsync();
                         var rolePermission = new RolePermission
                         {
-                            Id = total.Count + 1,
                             RoleId = id,
                             PermissionId = permission,
                             TenantId = tenantId
@@ -42,11 +40,14 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
                     }
                     else
                     {
-                        var entity = await GetById(rolePermissionId);
+                        var entity = await _context
+                            .Set<RolePermission>()
+                            .FirstOrDefaultAsync(rp => rp.Id == rolePermissionId && rp.TenantId == tenantId);
+
                         if (entity is not null)
                         {
                             entity.IsActive = true;
-                            await Update(rolePermissionId, entity);
+                            await Update(rolePermissionId, entity, tenantId);
                         }
                     }
                 }
@@ -58,8 +59,8 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
 
         public async Task<int> Exists(int roleId, int permissionId, Guid tenantId)
         {
-            var role = await _roleRepository.GetById(roleId) is not null;
-            var permission = await _permissionRepository.GetById(permissionId) is not null;
+            var role = await _roleRepository.GetById(roleId, tenantId) is not null;
+            var permission = await _permissionRepository.GetById(permissionId, tenantId) is not null;
             if (role && permission)
             {
                 int id = await _context
@@ -74,7 +75,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
 
         public async Task<RolePermissionsDTO> GetPermissionsByRoleId(int roleId, Guid tenantId)
         {
-            var role = await _roleRepository.GetById(roleId);
+            var role = await _roleRepository.GetById(roleId, tenantId);
             if (role is null)
             {
                 throw new InvalidOperationException("Role not found");
@@ -92,7 +93,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             var permissions = new List<PermissionDTO>();
             foreach (var id in permissionsId)
             {
-                var permission = await _permissionRepository.GetById(id);
+                var permission = await _permissionRepository.GetById(id, tenantId);
                 if (permission is not null)
                 {
                     permissions.Add(new PermissionDTO
@@ -122,7 +123,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
 
         public async Task<bool> RevokePermissions(int id, PermissionsDTO permissions, Guid tenantId)
         {
-            var role = await _roleRepository.GetById(id);
+            var role = await _roleRepository.GetById(id, tenantId);
             if (role is null)
             {
                 throw new InvalidOperationException($"Role with id {id} not found");
@@ -138,19 +139,19 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
 
                 if (entityId != 0)
                 {
-                    var rolePermission = await GetById(entityId);
+                    var rolePermission = await GetById(entityId, tenantId);
                     if (rolePermission is not null)
                     {
                         rolePermission.IsActive = false;
                         rolePermission.Deleted = DateTime.UtcNow;
-                        await Update(entityId, rolePermission);
+                        await Update(entityId, rolePermission, tenantId);
                     }
                 }
             }
             return true;
         }
 
-        public async Task<bool> HasPermission(VerifyPermissionDTO hasPermission)
+        public async Task<bool> HasPermission(HasPermissionDTO hasPermission)
         {
             int id = await Exists(hasPermission.RoleId, hasPermission.PermissionId, hasPermission.TenantId);
             return id != 0;

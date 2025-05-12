@@ -12,9 +12,9 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
     ) : Repository<Permission, int>(context), IPermissionRepository
     {
         private readonly IRepository<Category, int> _categoryRepository = categoryRepository;
-        public async Task<IEnumerable<PermissionDTO>> GetPermissionsByCategoryId(int categoryId)
+        public async Task<IEnumerable<PermissionDTO>> GetPermissionsByCategoryId(int categoryId, Guid tenantId)
         {
-            var notExists = await _categoryRepository.GetById(categoryId) is null;
+            var notExists = await _categoryRepository.GetById(categoryId, tenantId) is null;
 
             if (notExists)
             {
