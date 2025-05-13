@@ -40,15 +40,19 @@ namespace AuthService.Presentation.Configurations
             services.AddScoped<IService<Permission, int>, PermissionService>();
             services.AddScoped<IService<RolePermission, int>, RolePermissionService>();
             services.AddScoped<IRolePermissionService, RolePermissionService>();
+            services.AddScoped<IService<Category, int>, CategoryService>();
+            services.AddScoped<ITenantService, TenantService>();
             services.AddScoped<IRepository<Role, int>, RoleRepository>();
             services.AddScoped<IRepository<Permission, int>, PermissionRepository>();
             services.AddScoped<IRepository<RolePermission, int>, RolePermissionRepository>();
             services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+            services.AddScoped<IRepository<Category, int>, CategoryRepository>();
             services.AddScoped<IJWTDecoder, JWTDecoder>();
 
             services.AddValidatorsFromAssemblyContaining<RoleValidator>();
             services.AddValidatorsFromAssemblyContaining<PermissionValidator>();
             services.AddValidatorsFromAssemblyContaining<RolePermissionValidator>();
+            services.AddValidatorsFromAssemblyContaining<CategoryValidator>();
 
             return services;
         }

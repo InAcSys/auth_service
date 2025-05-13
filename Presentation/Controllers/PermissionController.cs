@@ -14,16 +14,16 @@ namespace AuthService.Presentation.Controllers
         private readonly IService<Permission, int> _service = service;
 
         [HttpGet]
-        public async Task<IActionResult> GetAll(int pageNumber = 1, int pageSize = 10)
+        public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var permissions = await _service.GetAll(pageNumber, pageSize);
+            var permissions = await _service.GetAll(pageNumber, pageSize, Guid.Empty);
             return Ok(permissions);
         }
 
         [HttpGet("id/{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var permission = await _service.GetById(id);
+            var permission = await _service.GetById(id, Guid.Empty);
             if (permission is null)
             {
                 return NotFound();
@@ -32,7 +32,7 @@ namespace AuthService.Presentation.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreatePermissionDTO permission)
+        public async Task<IActionResult> Create([FromBody] CreatePermissionDTO permission)
         {
             try
             {
@@ -40,9 +40,10 @@ namespace AuthService.Presentation.Controllers
                 {
                     Name = permission.Name,
                     Description = permission.Description,
-                    Path = permission.Path
+                    Path = permission.Path,
+                    CategoryId = permission.CategoryId
                 };
-                var createdPermission = await _service.Create(newPermission);
+                var createdPermission = await _service.Create(newPermission, Guid.Empty);
                 if (createdPermission is null)
                 {
                     return BadRequest("Permission can not be create");
@@ -56,7 +57,7 @@ namespace AuthService.Presentation.Controllers
         }
 
         [HttpPut("id/{id}")]
-        public async Task<IActionResult> Update(int id, UpdatePermissionDTO permission)
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdatePermissionDTO permission)
         {
             try
             {
@@ -67,7 +68,7 @@ namespace AuthService.Presentation.Controllers
                     Path = permission.Path,
                     Updated = DateTime.UtcNow
                 };
-                var updatePermission = await _service.Update(id, updatedPermission);
+                var updatePermission = await _service.Update(id, updatedPermission, Guid.Empty);
                 if (updatePermission is null)
                 {
                     return BadRequest("Permission can not be udpate");
@@ -85,11 +86,11 @@ namespace AuthService.Presentation.Controllers
         }
 
         [HttpDelete("id/{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
             try
             {
-                var result = await _service.Delete(id);
+                var result = await _service.Delete(id, Guid.Empty);
                 if (!result)
                 {
                     return BadRequest("Permission can not be delete");

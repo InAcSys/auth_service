@@ -2,7 +2,8 @@ namespace AuthService.Domain.DTOs.RolePermission
 {
     public class HasPermissionDTO
     {
-        public string JWT { get; set; } = "";
+        public int RoleId { get; set; }
         public int PermissionId { get; set;}
+        public Guid TenantId { get; set; }
     }
 }
