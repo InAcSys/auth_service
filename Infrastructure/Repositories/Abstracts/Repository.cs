@@ -16,7 +16,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
 
         public async virtual Task<bool> Delete(TKey id, Guid tenantId)
         {
-            var entity = await _context.Set<T>().FindAsync(id, tenantId);
+            var entity = await GetById(id, tenantId);
             if (entity is null)
             {
                 return false;
@@ -27,24 +27,30 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             return result is not null;
         }
 
-        public async virtual Task<IEnumerable<T>> GetAll(int pageNumber, int pageSize, Guid? tenantId)
+        public virtual async Task<IEnumerable<T>> GetAll(int pageNumber, int pageSize, Guid tenantId)
         {
             if (pageNumber < 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(pageNumber), "Page number must be greater than or equal to 1.");
             }
+
             if (pageSize < 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be greater than or equal to 1.");
             }
 
             var skip = (pageNumber - 1) * pageSize;
-            var take = pageSize;
 
-            var entities = await _context.Set<T>()
-                .Where(x => x.IsActive && (x.TenantId == tenantId || x.TenantId == Guid.Empty))
+            var query = _context.Set<T>().Where(x => x.IsActive);
+
+            if (tenantId != Guid.Empty)
+            {
+                query = query.Where(x => x.TenantId == tenantId || x.TenantId == Guid.Empty);
+            }
+
+            var entities = await query
                 .Skip(skip)
-                .Take(take)
+                .Take(pageSize)
                 .ToListAsync();
 
             return entities;
@@ -92,6 +98,10 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             }
 
             existingEntity.Updated = DateTime.UtcNow;
+            if (existingEntity.TenantId != Guid.Empty)
+            {
+                existingEntity.TenantId = tenantId;
+            }
 
             _context.Entry(existingEntity).CurrentValues.SetValues(entity);
             await _context.SaveChangesAsync();

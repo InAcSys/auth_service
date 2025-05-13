@@ -16,7 +16,7 @@ namespace AuthService.Presentation.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var permissions = await _service.GetAll(pageNumber, pageSize, null);
+            var permissions = await _service.GetAll(pageNumber, pageSize, Guid.Empty);
             return Ok(permissions);
         }
 
@@ -40,9 +40,10 @@ namespace AuthService.Presentation.Controllers
                 {
                     Name = permission.Name,
                     Description = permission.Description,
-                    Path = permission.Path
+                    Path = permission.Path,
+                    CategoryId = permission.CategoryId
                 };
-                var createdPermission = await _service.Create(newPermission, null);
+                var createdPermission = await _service.Create(newPermission, Guid.Empty);
                 if (createdPermission is null)
                 {
                     return BadRequest("Permission can not be create");

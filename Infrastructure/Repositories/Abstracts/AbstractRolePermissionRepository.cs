@@ -65,7 +65,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             {
                 int id = await _context
                     .Set<RolePermission>()
-                    .Where(rp => rp.RoleId == roleId && rp.PermissionId == permissionId)
+                    .Where(rp => rp.RoleId == roleId && rp.PermissionId == permissionId && rp.TenantId == tenantId)
                     .Select(rp => rp.Id)
                     .FirstOrDefaultAsync();
                 return id;
@@ -133,7 +133,7 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             {
                 int entityId = await _context
                     .Set<RolePermission>()
-                    .Where(rp => rp.RoleId == id && rp.PermissionId == permissionId)
+                    .Where(rp => rp.RoleId == id && rp.PermissionId == permissionId && rp.TenantId == tenantId)
                     .Select(rp => rp.Id)
                     .FirstOrDefaultAsync();
 

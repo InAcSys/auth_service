@@ -14,7 +14,7 @@ namespace AuthService.Application.Services.Abstracts
         protected readonly IValidator<T> _validator = validator;
         protected readonly IRepository<T, TKey> _repository = repository;
 
-        public virtual Task<T?> Create(T entity, Guid? tenantId)
+        public virtual Task<T?> Create(T entity, Guid tenantId)
         {
             var result = _validator.Validate(entity);
             if (!result.IsValid)
@@ -35,7 +35,7 @@ namespace AuthService.Application.Services.Abstracts
             return result;
         }
 
-        public virtual Task<IEnumerable<T>> GetAll(int pageNumber, int pageSize, Guid? tenantId)
+        public virtual Task<IEnumerable<T>> GetAll(int pageNumber, int pageSize, Guid tenantId)
         {
             var entities = _repository.GetAll(pageNumber, pageSize, tenantId);
             return entities;

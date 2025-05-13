@@ -38,7 +38,8 @@ namespace AuthService.Presentation.Controllers
             {
                 var newRole = new Role
                 {
-                    Name = role.Name
+                    Name = role.Name,
+                    TenantId = tenantId
                 };
                 var createdRole = await _service.Create(newRole, tenantId);
                 if (createdRole is null)

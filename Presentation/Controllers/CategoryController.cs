@@ -16,12 +16,12 @@ namespace AuthService.Presentation.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var categories = await _service.GetAll(pageNumber, pageSize, null);
+            var categories = await _service.GetAll(pageNumber, pageSize, Guid.Empty);
             return Ok(categories);
         }
 
         [HttpGet("id/{id}/permissions")]
-        public async Task<IActionResult> GetById([FromQuery] int id)
+        public async Task<IActionResult> GetById([FromRoute] int id)
         {
             var result = await _service.GetById(id, Guid.Empty);
             if (result is null)
@@ -38,7 +38,7 @@ namespace AuthService.Presentation.Controllers
             {
                 Name = category.Name
             };
-            var result = await _service.Create(entity, null);
+            var result = await _service.Create(entity, Guid.Empty);
             if (result is null)
             {
                 return BadRequest("Category can not be created");
