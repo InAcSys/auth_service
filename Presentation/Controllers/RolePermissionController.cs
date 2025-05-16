@@ -58,6 +58,7 @@ namespace AuthService.Presentation.Controllers
             [FromQuery] int roleId,
             [FromQuery] Guid tenantId)
         {
+            Console.WriteLine(authorization);
             var jwtBody = new JWTBody();
             if (!string.IsNullOrEmpty(authorization))
             {
