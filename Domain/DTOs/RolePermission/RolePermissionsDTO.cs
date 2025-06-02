@@ -1,3 +1,5 @@
+using AuthService.Domain.DTOs.Permissions;
+
 namespace AuthService.Domain.DTOs.RolePermission
 {
     public class RolePermissionsDTO

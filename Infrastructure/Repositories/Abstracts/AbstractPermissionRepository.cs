@@ -1,4 +1,4 @@
-using AuthService.Domain.DTOs.RolePermission;
+using AuthService.Domain.DTOs.Permissions;
 using AuthService.Domain.Entities.Concretes;
 using AuthService.Infrastructure.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;

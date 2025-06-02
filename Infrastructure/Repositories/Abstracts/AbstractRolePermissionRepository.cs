@@ -1,3 +1,4 @@
+using AuthService.Domain.DTOs.Permissions;
 using AuthService.Domain.DTOs.RolePermission;
 using AuthService.Domain.Entities.Concretes;
 using AuthService.Infrastructure.Repositories.Interfaces;
@@ -8,11 +9,11 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
     public abstract class AbstractRolePermissionRepository(
         DbContext context,
         IRepository<Role, int> roleRepository,
-        IRepository<Permission, int> permissionRepository
+        IPermissionRepository permissionRepository
     ) : Repository<RolePermission, int>(context), IRolePermissionRepository
     {
         protected IRepository<Role, int> _roleRepository = roleRepository;
-        protected IRepository<Permission, int> _permissionRepository = permissionRepository;
+        protected IPermissionRepository _permissionRepository = permissionRepository;
 
         public async Task<RolePermissionsDTO> Assign(int id, CreateRolePermissionDTO permissions, Guid tenantId)
         {

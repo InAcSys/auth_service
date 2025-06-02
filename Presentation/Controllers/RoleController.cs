@@ -2,21 +2,24 @@ using System.ComponentModel.DataAnnotations;
 using AuthService.Application.Services.Interfaces;
 using AuthService.Domain.DTOs.Roles;
 using AuthService.Domain.Entities.Concretes;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthService.Presentation.Controllers
 {
     [ApiController, Route("api/[controller]")]
     public class RoleController(
-        IService<Role, int> service
+        IService<Role, int> service,
+        IMapper mapper
     ) : ControllerBase
     {
         private readonly IService<Role, int> _service = service;
+        private readonly IMapper _mapper = mapper;
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] Guid tenantId = default)
+        public async Task<IActionResult> GetAll([FromQuery] Guid tenantId = default)
         {
-            var roles = await _service.GetAll(pageNumber, pageSize, tenantId);
+            var roles = await _service.GetAll(tenantId);
             return Ok(roles);
         }
 
@@ -36,12 +39,9 @@ namespace AuthService.Presentation.Controllers
         {
             try
             {
-                var newRole = new Role
-                {
-                    Name = role.Name,
-                    TenantId = tenantId
-                };
-                var createdRole = await _service.Create(newRole, tenantId);
+                var entity = _mapper.Map<Role>(role);
+                entity.TenantId = tenantId;
+                var createdRole = await _service.Create(entity, tenantId);
                 if (createdRole is null)
                 {
                     return BadRequest("Role can not be create");
@@ -59,12 +59,9 @@ namespace AuthService.Presentation.Controllers
         {
             try
             {
-                var updatedRole = new Role
-                {
-                    Name = role.Name,
-                    Updated = DateTime.UtcNow
-                };
-                var updateRole = await _service.Update(id, updatedRole, tenantId);
+                var entity = _mapper.Map<Role>(role);
+                entity.Updated = DateTime.UtcNow;
+                var updateRole = await _service.Update(id, entity, tenantId);
                 if (updateRole is null)
                 {
                     return BadRequest("Role can not be udpate");

@@ -2,21 +2,25 @@ using System.ComponentModel.DataAnnotations;
 using AuthService.Application.Services.Interfaces;
 using AuthService.Domain.DTOs.Permissions;
 using AuthService.Domain.Entities.Concretes;
+using AutoMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthService.Presentation.Controllers
 {
     [ApiController, Route("api/[controller]")]
     public class PermissionController(
-        IService<Permission, int> service
+        IPermissionService service,
+        IMapper mapper
     ) : ControllerBase
     {
-        private readonly IService<Permission, int> _service = service;
+        private readonly IPermissionService _service = service;
+        private readonly IMapper _mapper = mapper;
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAll()
         {
-            var permissions = await _service.GetAll(pageNumber, pageSize, Guid.Empty);
+            var permissions = await _service.GetAll(Guid.Empty);
             return Ok(permissions);
         }
 
@@ -36,14 +40,8 @@ namespace AuthService.Presentation.Controllers
         {
             try
             {
-                var newPermission = new Permission
-                {
-                    Name = permission.Name,
-                    Description = permission.Description,
-                    Path = permission.Path,
-                    CategoryId = permission.CategoryId
-                };
-                var createdPermission = await _service.Create(newPermission, Guid.Empty);
+                var entity = _mapper.Map<Permission>(permission);
+                var createdPermission = await _service.Create(entity, Guid.Empty);
                 if (createdPermission is null)
                 {
                     return BadRequest("Permission can not be create");
@@ -61,14 +59,8 @@ namespace AuthService.Presentation.Controllers
         {
             try
             {
-                var updatedPermission = new Permission
-                {
-                    Name = permission.Name,
-                    Description = permission.Description,
-                    Path = permission.Path,
-                    Updated = DateTime.UtcNow
-                };
-                var updatePermission = await _service.Update(id, updatedPermission, Guid.Empty);
+                var entity = _mapper.Map<Permission>(permission);
+                var updatePermission = await _service.Update(id, entity, Guid.Empty);
                 if (updatePermission is null)
                 {
                     return BadRequest("Permission can not be udpate");
@@ -101,6 +93,25 @@ namespace AuthService.Presentation.Controllers
             {
                 return BadRequest($"Permission with id {id} not found");
             }
+        }
+
+        [HttpGet("role")]
+        public async Task<IActionResult> GetPermissionsByRole([FromQuery] int roleId, [FromQuery] Guid tenantId)
+        {
+            try
+            {
+                var result = await _service.GetPermissionsByRole(roleId, tenantId);
+                if (!result.Any())
+                {
+                    return NotFound("This role has no permissions assigned");
+                }
+                return Ok(result);
+            }
+            catch (ArgumentException exception)
+            {
+                return BadRequest(exception.Message);
+            }
+
         }
     }
 }

@@ -1,4 +1,4 @@
-using AuthService.Domain.DTOs.RolePermission;
+using AuthService.Domain.DTOs.Permissions;
 using AuthService.Domain.Entities.Concretes;
 
 namespace AuthService.Infrastructure.Repositories.Interfaces

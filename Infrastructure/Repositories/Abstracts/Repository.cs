@@ -27,19 +27,8 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             return result is not null;
         }
 
-        public virtual async Task<IEnumerable<T>> GetAll(int pageNumber, int pageSize, Guid tenantId)
+        public virtual async Task<IEnumerable<T>> GetAll(Guid tenantId)
         {
-            if (pageNumber < 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(pageNumber), "Page number must be greater than or equal to 1.");
-            }
-
-            if (pageSize < 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(pageSize), "Page size must be greater than or equal to 1.");
-            }
-
-            var skip = (pageNumber - 1) * pageSize;
 
             var query = _context.Set<T>().Where(x => x.IsActive);
 
@@ -49,8 +38,6 @@ namespace AuthService.Infrastructure.Repositories.Abstracts
             }
 
             var entities = await query
-                .Skip(skip)
-                .Take(pageSize)
                 .ToListAsync();
 
             return entities;

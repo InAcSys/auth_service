@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AuthService.Infrastructure.Repositories.Concretes
 {
-    public class CategoryRepository(DbContext context) : Repository<Category, int>(context)
+    public class CategoryRepository(DbContext context) : AbstractCategoryRepository(context)
     {
     }
 }

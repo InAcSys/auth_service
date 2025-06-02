@@ -1,4 +1,3 @@
-using AuthService.Application.Decoders.JWT;
 using AuthService.Application.Services.Concretes;
 using AuthService.Application.Services.Interfaces;
 using AuthService.Application.Validators;
@@ -7,6 +6,7 @@ using AuthService.Infrastructure.Context;
 using AuthService.Infrastructure.Context.Concretes;
 using AuthService.Infrastructure.Repositories.Concretes;
 using AuthService.Infrastructure.Repositories.Interfaces;
+using AuthService.Presentation.Profiles;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,22 +37,24 @@ namespace AuthService.Presentation.Configurations
             );
 
             services.AddScoped<IService<Role, int>, RoleService>();
-            services.AddScoped<IService<Permission, int>, PermissionService>();
-            services.AddScoped<IService<RolePermission, int>, RolePermissionService>();
+            services.AddScoped<IPermissionService, PermissionService>();
             services.AddScoped<IRolePermissionService, RolePermissionService>();
             services.AddScoped<IService<Category, int>, CategoryService>();
             services.AddScoped<ITenantService, TenantService>();
             services.AddScoped<IRepository<Role, int>, RoleRepository>();
-            services.AddScoped<IRepository<Permission, int>, PermissionRepository>();
-            services.AddScoped<IRepository<RolePermission, int>, RolePermissionRepository>();
+            services.AddScoped<IPermissionRepository, PermissionRepository>();
             services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
-            services.AddScoped<IRepository<Category, int>, CategoryRepository>();
-            services.AddScoped<IJWTDecoder, JWTDecoder>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
 
             services.AddValidatorsFromAssemblyContaining<RoleValidator>();
             services.AddValidatorsFromAssemblyContaining<PermissionValidator>();
             services.AddValidatorsFromAssemblyContaining<RolePermissionValidator>();
             services.AddValidatorsFromAssemblyContaining<CategoryValidator>();
+
+            services.AddAutoMapper(typeof(CategoryProfile));
+            services.AddAutoMapper(typeof(RoleProfile));
+            services.AddAutoMapper(typeof(PermissionProfile));
+            services.AddAutoMapper(typeof(RolePermissionProfile));
 
             return services;
         }

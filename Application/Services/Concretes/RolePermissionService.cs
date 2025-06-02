@@ -7,7 +7,7 @@ namespace AuthService.Application.Services.Concretes
 {
     public class RolePermissionService(
         IValidator<RolePermission> validator,
-        IRepository<RolePermission, int> repository,
+        IRolePermissionRepository repository,
         IRolePermissionRepository rolePermissionRepository
     ) : AbstractRolePermissionService(validator, repository, rolePermissionRepository)
     {

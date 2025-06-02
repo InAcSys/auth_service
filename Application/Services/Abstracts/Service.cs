@@ -35,9 +35,9 @@ namespace AuthService.Application.Services.Abstracts
             return result;
         }
 
-        public virtual Task<IEnumerable<T>> GetAll(int pageNumber, int pageSize, Guid tenantId)
+        public virtual Task<IEnumerable<T>> GetAll(Guid tenantId)
         {
-            var entities = _repository.GetAll(pageNumber, pageSize, tenantId);
+            var entities = _repository.GetAll(tenantId);
             return entities;
         }
 

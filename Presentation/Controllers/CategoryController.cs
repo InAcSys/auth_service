@@ -1,22 +1,24 @@
-using AuthService.Application.Decoders.JWT;
 using AuthService.Application.Services.Interfaces;
 using AuthService.Domain.DTOs.Categories;
 using AuthService.Domain.Entities.Concretes;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthService.Presentation.Controllers
 {
     [ApiController, Route("api/[controller]")]
     public class CategoryController(
-        IService<Category, int> service
+        IService<Category, int> service,
+        IMapper mapper
     ) : ControllerBase
     {
         private readonly IService<Category, int> _service = service;
+        private readonly IMapper _mapper = mapper;
 
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAll()
         {
-            var categories = await _service.GetAll(pageNumber, pageSize, Guid.Empty);
+            var categories = await _service.GetAll(Guid.Empty);
             return Ok(categories);
         }
 
@@ -34,10 +36,7 @@ namespace AuthService.Presentation.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateCategoryDTO category)
         {
-            var entity = new Category
-            {
-                Name = category.Name
-            };
+            var entity = _mapper.Map<Category>(category);
             var result = await _service.Create(entity, Guid.Empty);
             if (result is null)
             {

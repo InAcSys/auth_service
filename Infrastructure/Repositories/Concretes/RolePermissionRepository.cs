@@ -8,7 +8,7 @@ namespace AuthService.Infrastructure.Repositories.Concretes
     public class RolePermissionRepository(
         DbContext context,
         IRepository<Role, int> roleRepository,
-        IRepository<Permission, int> permissionRepository
+        IPermissionRepository permissionRepository
     ) : AbstractRolePermissionRepository(context, roleRepository, permissionRepository)
     {
     }
