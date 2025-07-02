@@ -507,4 +507,11 @@ VALUES
         '/create',
         'CREATE_ROLES',
         24
-    ); -- 54
+    ), -- 54
+    (
+        'Crear anuncios',
+        'Crear anuncios en las materias',
+        '/',
+        'CREATE_ANNOUNCEMENT',
+        13
+    ); -- 55 
