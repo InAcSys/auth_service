@@ -7,6 +7,7 @@ namespace AuthService.Domain.DTOs.Categories
         public int Id { get; set; }
         public string Name { get; set; } = "";
         public string Path { get; set; } = "";
+        public string Code { get; set; } = "";
         public IEnumerable<PermissionsByCategoryDTO>? SubCategories { get; set; } = new List<PermissionsByCategoryDTO>();
         public IEnumerable<PermissionDTO>? Permissions { get; set; } = new List<PermissionDTO>();
     }

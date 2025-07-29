@@ -19,6 +19,11 @@ services:
       MYSQL_DATABASE: ${AUTHORIZATION_SERVICE_DATABASE_DB}
       MYSQL_USER: ${AUTHORIZATION_SERVICE_DATABASE_USER}
       MYSQL_PASSWORD: ${AUTHORIZATION_SERVICE_DATABASE_PASSWORD}
+      TZ: UTC
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --skip-character-set-client-handshake
     volumes:
       - mysql-data:/var/lib/mysql
       - ./auth-database/init.sql:/docker-entrypoint-initdb.d/init.sql

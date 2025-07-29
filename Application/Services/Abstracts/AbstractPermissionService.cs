@@ -64,6 +64,7 @@ namespace AuthService.Application.Services.Abstracts
                         Id = c.Id,
                         Name = c.Name,
                         Path = c.Path,
+                        Code = c.Code,
                         Permissions = permissionsByCategory.ContainsKey(c.Id) ? permissionsByCategory[c.Id] : new List<PermissionDTO>(),
                         SubCategories = BuildCategoryTree(c.Id)
                     })

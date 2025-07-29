@@ -5,5 +5,6 @@ namespace AuthService.Domain.DTOs.Categories
         public string Name { get; set; } = "";
         public int? ParentId { get; set; }
         public string Path { get; set; } = "";
+        public string Code { get; set; } = "";
     }
 }
